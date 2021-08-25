@@ -1,0 +1,6 @@
+__pycache__
+.idea/
+papers
+backup
+*.pyc
+archive

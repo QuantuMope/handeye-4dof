@@ -35,7 +35,7 @@ Several methods exist to solve for **X** but a vast majority of these methods as
 - Expand documentation in README
 - Add ROS capabilities.
 - Add command line interface.
-- Add post nonlinear refinement.
+- ~~Add post nonlinear refinement.~~
 - Add singular value checking.
 - Add pose selection based off of dual quaternion scalar score.
 - Add eye-on-base functionality.

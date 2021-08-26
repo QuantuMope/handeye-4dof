@@ -1,13 +1,8 @@
 import sympy as sy
 import numpy as np
+from scipy.optimize import minimize
 from .dual_quaternions import DualQuaternion
-from .utils import vec_to_skew_symmetric_mat
-
-
-"""
-TODO: (1) add nonlinear refinement
-      (2) add singular value checking
-"""
+from .utils import vec_to_skew_symmetric_mat, rotation_matrix_constraints, obtain_tf_from_rolled_arr
 
 
 class Calibrator4DOF:
@@ -100,3 +95,42 @@ class Calibrator4DOF:
             dq_x = dq_rot2 * dq_x
 
         return dq_x
+
+    @staticmethod
+    def nonlinear_refinement(base_to_hand, camera_to_marker, calib_hand_to_camera):
+        # We only vary the first 11 parameters of the transform matrix since we cannot solve for tz.
+        W = np.eye(4)
+        W[-1, -1] = 9
+
+        def base_to_marker_error(xi):
+            base_to_marker = obtain_tf_from_rolled_arr(xi)
+            e = 0
+            for bth, ctm in zip(base_to_hand, camera_to_marker):
+                E = base_to_marker - bth.dot(calib_hand_to_camera).dot(ctm)
+                e += np.trace(E.dot(W).dot(E.T))
+            return e
+
+        # We just use an arbitrary pose as our initial guess.
+        x0 = (base_to_hand[0].dot(calib_hand_to_camera).dot(camera_to_marker[0])).ravel()[:11]
+
+        nl_base_to_marker = obtain_tf_from_rolled_arr(minimize(base_to_marker_error, x0,
+                                                               constraints=rotation_matrix_constraints()).x)
+
+        # Now that we optimized to obtain base to marker transform, we perform the optimization
+        # once more to regain the hand to camera transform (the one we care about).
+        # This could possibly be replaced with some form of transform averaging.
+
+        def hand_to_camera_error(xi):
+            hand_to_camera = obtain_tf_from_rolled_arr(xi)
+            e = 0
+            for bth, ctm in zip(base_to_hand, camera_to_marker):
+                E = hand_to_camera - np.linalg.inv(bth).dot(nl_base_to_marker).dot(np.linalg.inv(ctm))
+                e += np.trace(E.dot(W).dot(E.T))
+            return e
+
+        x0 = (np.linalg.inv(base_to_hand[0]).dot(nl_base_to_marker).dot(np.linalg.inv(camera_to_marker[0]))).ravel()[:11]
+
+        nl_hand_to_camera = obtain_tf_from_rolled_arr(minimize(hand_to_camera_error, x0,
+                                                               constraints=rotation_matrix_constraints()).x)
+
+        return nl_hand_to_camera

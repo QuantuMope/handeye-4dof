@@ -13,34 +13,78 @@ Robot handeye calibration is an important and well studied problem that allows u
 
 Several methods exist to solve for **X** but a vast majority of these methods assume that the robot is well articulated (i.e. has 6DOF). For 4DOF robots such as SCARAs (x, y, z, yaw), conventional calibration methods are infeasible and are incapable of producing valid results. This method circumvents this problem by reducing [2] to 4DOF robots. See [1] for further details. For an introduction to dual quaternions, see [3].
 
-[comment]: <> (## How to run)
+## How to run
+To run, first install necessary packages.
+```bash
+python3 -m pip install -r requirements.txt
+```
+The expected format for poses is a pickle file containing a tuple consisting of a list of base to hand transforms and a list of camera to marker transforms. All transforms should be 4x4 numpy arrays.
 
-[comment]: <> (To run, first install necessary packages.)
+Afterwards, calibration can be performed by running the command shown below. 
 
-[comment]: <> (```bash)
+```bash
+cd src # For descriptions on the command line arguments, run python3 calibrate.py -h
+python3 calibrate.py [-h] [-p POSE_PATH] [-m MOTION_PATH] [-c] [-a] [-n] [-s SAMPLE]
+```
 
-[comment]: <> (python3 -m pip install -r requirements.txt)
+For those who wish to create their own custom scripts, an example template is provided in `src/example.py` which can also be seen below.
+```python3
+def main():
+    with open("../example_data/pose_samples.pkl", "rb") as f:
+        try:
+            base_to_hand, camera_to_marker = pickle.load(f)
+        except UnicodeDecodeError:
+            # python 2 to python 3 pickle in case sampling was done in ROS
+            base_to_hand, camera_to_marker = pickle.load(f, encoding='latin1')
 
-[comment]: <> (```)
+    with open("../example_data/paired_poses.pkl", "rb") as f:
+        motions = pickle.load(f)
 
-[comment]: <> (Example transform samples are provided in pickle format.)
+    # Initialize calibrator with precomputed motions.
+    cb = Calibrator4DOF(motions)
 
-[comment]: <> (```bash)
+    # Our camera and end effector z-axes are antiparallel so we must apply a 180deg x-axis rotation.
+    dq_x = cb.calibrate(antiparallel_screw_axes=True)
 
-[comment]: <> (python3 -m pip install -r requirements.txt)
+    # Calibration Obtained Hand to Camera
+    ca_hand_to_camera = np.linalg.inv(dq_x.as_transform())
 
-[comment]: <> (```)
+    # Calibration Obtained with post nonlinear refinement
+    nl_hand_to_camera = cb.nonlinear_refinement(base_to_hand, camera_to_marker, ca_hand_to_camera)
+
+    ca_rotation = np.rad2deg(R.from_matrix(ca_hand_to_camera[:3, :3]).as_euler('xyz'))
+    nl_rotation = np.rad2deg(R.from_matrix(nl_hand_to_camera[:3, :3]).as_euler('xyz'))
+
+    # Ground Truth Hand to Camera
+    gt_translation = [-0.456, -0.037, -0.112]
+    gt_rotation = [180, 0, 0]
+
+    # NOTE: (1) Ground Truth itself may be inaccurate (manually measured).
+    #       (2) z-translation is an invalid number.
+    np.set_printoptions(precision=5)
+    print("Hand to Camera Transform Comparisons")
+    print("Translations: Calibration  {}".format(ca_hand_to_camera[:3, -1]))
+    print("              Nonlinear    {}".format(nl_hand_to_camera[:3, -1]))
+    print("              Ground Truth {}".format(gt_translation))
+    print("Rotations:    Calibration  {}".format(ca_rotation))
+    print("              Nonlinear    {}".format(nl_rotation))
+    print("              Ground Truth {}".format(gt_rotation))
+
+
+if __name__ == '__main__':
+    main()
+```
 
 ## TODO
-- Expand documentation in README
+- Improve README documentation.
 - Add ROS capabilities.
 - ~~Add command line interface.~~
 - ~~Add post nonlinear refinement.~~
 - Add singular value checking.
-- Add pose selection based off of dual quaternion scalar score.
-- Add eye-on-base functionality.
+- Add pose selection based off of dual quaternion scalar score *(tried but not working)*.
+- Add eye-on-base functionality **(major update)**.
 - Add details for z-translation obtainment.
-- Add code comments.
+- Add code comments throughout.
 
 ## References
 [1] Ulrich, Markus. “Hand-Eye Calibration of SCARA Robots.” (2014).

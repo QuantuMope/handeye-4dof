@@ -11,12 +11,12 @@ np.set_printoptions(suppress=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Handeye-4DOF Calibrator.")
-    parser.add_argument("-c", "--computeMotions", action="store_true", dest="compute_motions",
-                        help="determines whether to compute and store motions or load precomputed motions")
-    parser.add_argument("-m", "--motionPath", dest="motion_path",
-                        help="path to store motions or to load precomputed motions")
     parser.add_argument("-p", "--posePath", dest="pose_path",
                         help="path to pose pairs")
+    parser.add_argument("-m", "--motionPath", dest="motion_path",
+                        help="path to store motions or to load precomputed motions")
+    parser.add_argument("-c", "--computeMotions", action="store_true", dest="compute_motions",
+                        help="determines whether to compute and store motions or load precomputed motions")
     parser.add_argument("-a", "--antiParallelAxes", dest="antiparallel_axes", action="store_true",
                         help="perform 180 x-axis rotation to avoid matrix rank loss due to anti-parallel screw axes")
     parser.add_argument("-n", "--nonlinear", action="store_true",

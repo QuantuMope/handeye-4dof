@@ -1,7 +1,13 @@
 import pickle
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from handeye_4dof import Calibrator4DOF, robot_pose_selector
+from handeye_4dof import Calibrator4DOF
+
+
+"""
+    Exactly the same as example.py except we load precomputed 
+    motions instead, resulting in faster completion.
+"""
 
 
 np.set_printoptions(suppress=True)
@@ -15,8 +21,8 @@ def main():
             # python 2 to python 3 pickle in case sampling was done in ROS
             base_to_hand, camera_to_marker = pickle.load(f, encoding='latin1')
 
-    # Obtain optimal motions as dual quaternions.
-    motions = robot_pose_selector(camera_to_marker, base_to_hand)
+    with open("../example_data/paired_poses.pkl", "rb") as f:
+        motions = pickle.load(f)
 
     # Initialize calibrator with precomputed motions.
     cb = Calibrator4DOF(motions)

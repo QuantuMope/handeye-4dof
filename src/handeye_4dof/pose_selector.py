@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from handeye_4dof import DualQuaternion
+from .dual_quaternions import DualQuaternion
 
 
 def robot_pose_selector(camera_to_marker, base_to_hand):
@@ -15,13 +15,14 @@ def robot_pose_selector(camera_to_marker, base_to_hand):
             B = DualQuaternion.from_transform(np.dot(np.linalg.inv(Bj), Bi))
             theta1 = A.as_screw_params()[-1]
             theta2 = B.as_screw_params()[-1]
+
+            # Obtain motions with maximal screw angles.
             theta_sum = np.sum(np.abs([theta1, theta2]))
             if theta_sum > curr_theta_max:
                 curr_theta_max = theta_sum
                 motions[i] = (A, B)
 
-    # TODO: add dual scalar minimization scoring selection
-    print("Obtained all motions.")
+    print("Obtained a total of {} motions.".format(len(motions)))
     return motions
 
 

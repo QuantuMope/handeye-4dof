@@ -1,4 +1,3 @@
-import random
 import pickle
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -13,14 +12,13 @@ def main():
         try:
             base_to_hand, camera_to_marker = pickle.load(f)
         except UnicodeDecodeError:
-            # python 2 to python 3 pickle
+            # python 2 to python 3 pickle in case sampling was done in ROS
             base_to_hand, camera_to_marker = pickle.load(f, encoding='latin1')
 
     with open("../example_data/paired_poses.pkl", "rb") as f:
         motions = pickle.load(f)
 
-    # motions = random.sample(motions, k=24)
-
+    # Initialize calibrator with precomputed motions.
     cb = Calibrator4DOF(motions)
 
     # Our camera and end effector z-axes are antiparallel so we must apply a 180deg x-axis rotation.

@@ -41,7 +41,7 @@ class Calibrator4DOF:
             a_vec_d = dq_a.dual.quat[1:]
             b_vec_d = dq_b.dual.quat[1:]
 
-            assert a_vec_r.dot(b_vec_r) > 0, "Error! Screw axes are canceling out."
+            assert a_vec_r.dot(b_vec_r) > 0, "Error! Screw axes anti-parallel are canceling out."
 
             T[i*6:i*6+3, 0] = a_vec_r - b_vec_r
             T[i*6:i*6+3, 1:4] = vec_to_skew_symmetric_mat(a_vec_r + b_vec_r)

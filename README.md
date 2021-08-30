@@ -54,13 +54,16 @@ def main():
   ```
 
 ## TODO
+If you would like to contribute by implementing any of the tasks below or you spot an error in the existing code base, feel free to submit a pull request!
+
+- Add eye-on-base functionality **(major update)**.
 - Improve README documentation.
 - Add ROS capabilities.
+- Add graphical visualizations / GUI.
 - ~~Add command line interface.~~
 - ~~Add post nonlinear refinement.~~
-- Add singular value checking.
+- ~~Add singular value checking.~~
 - Add pose selection based off of dual quaternion scalar score *(tried but not working)*.
-- Add eye-on-base functionality **(major update)**.
 - Add details for z-translation obtainment.
 - Add code comments throughout.
 

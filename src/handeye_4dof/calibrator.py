@@ -6,8 +6,9 @@ from .utils import vec_to_skew_symmetric_mat, rotation_matrix_constraints, obtai
 
 
 class Calibrator4DOF:
-    def __init__(self, motions):
+    def __init__(self, motions, sv_limit=0.5):
         self.motions = motions
+        self.sv_limit = sv_limit
 
     @staticmethod
     def convert_to_dual_vector(A, B):
@@ -41,7 +42,7 @@ class Calibrator4DOF:
             a_vec_d = dq_a.dual.quat[1:]
             b_vec_d = dq_b.dual.quat[1:]
 
-            assert a_vec_r.dot(b_vec_r) > 0, "Error! Screw axes anti-parallel are canceling out."
+            assert a_vec_r.dot(b_vec_r) > 0, "Error! Screw axes are anti-parallel. Matrix rank is being reduced."
 
             T[i*6:i*6+3, 0] = a_vec_r - b_vec_r
             T[i*6:i*6+3, 1:4] = vec_to_skew_symmetric_mat(a_vec_r + b_vec_r)
@@ -51,6 +52,14 @@ class Calibrator4DOF:
             T[i*6+3:i*6+6, 5:] = vec_to_skew_symmetric_mat(a_vec_r + b_vec_r)
 
         U, s, Vt = np.linalg.svd(T)
+
+        # Check that singular values are as expected.
+        for i, sv in enumerate(s):
+            if i < 5:
+                assert sv > self.sv_limit, "Singular value {} was {} < the limit {}.".format(i, sv, self.sv_limit)
+            else:
+                # The last 3 singular values should be reasonably close to zero.
+                assert sv < self.sv_limit, "Singular value {} was {} > the limit {}.".format(i, sv, self.sv_limit)
 
         # Rows are same as V column vectors
         v6 = Vt[5]

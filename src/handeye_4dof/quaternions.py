@@ -39,7 +39,7 @@ class Quaternion:
         xyz_norm = np.linalg.norm(xyz)
 
         if xyz_norm < 1e-10:
-            return np.array([1.0, 0.0, 0.0, 0.0])
+            return np.array([1.0, 0.0, 0.0]), 0.0
 
         axis = xyz / np.linalg.norm(xyz)
         angle = -((np.pi - 2 * np.arccos(w)) % (2.0 * np.pi) - np.pi)

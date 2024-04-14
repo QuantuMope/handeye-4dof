@@ -28,7 +28,7 @@ def main():
     ca_hand_to_camera = np.linalg.inv(dq_x.as_transform())
 
     # Hand to Camera TF obtained from post nonlinear refinement.
-    nl_hand_to_camera = cb.nonlinear_refinement(base_to_hand, camera_to_marker, ca_hand_to_camera)
+    nl_hand_to_camera = cb.nonlinear_refinement(camera_to_marker, base_to_hand, ca_hand_to_camera)
 
     ca_rotation = np.rad2deg(R.from_matrix(ca_hand_to_camera[:3, :3]).as_euler('xyz'))
     nl_rotation = np.rad2deg(R.from_matrix(nl_hand_to_camera[:3, :3]).as_euler('xyz'))

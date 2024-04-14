@@ -106,7 +106,7 @@ class Calibrator4DOF:
         return dq_x
 
     @staticmethod
-    def nonlinear_refinement(base_to_hand, camera_to_marker, calib_hand_to_camera):
+    def nonlinear_refinement(camera_to_marker, base_to_hand, calib_hand_to_camera):
         # We only vary the first 11 parameters of the transform matrix since we cannot solve for tz.
         W = np.eye(4)
         W[-1, -1] = 9

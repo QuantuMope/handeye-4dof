@@ -3,13 +3,13 @@ import numpy as np
 from .dual_quaternions import DualQuaternion
 
 
-def robot_pose_selector(camera_to_marker, base_to_hand):
-    assert len(camera_to_marker) == len(base_to_hand), "Nonmatching number of transforms."
-    motions = [None for _ in range(len(camera_to_marker))]
-    for i, (Ai, Bi) in enumerate(zip(camera_to_marker, base_to_hand)):
+def robot_pose_selector(tf1, tf2):
+    assert len(tf1) == len(tf2), "Nonmatching number of transforms."
+    motions = [None for _ in range(len(tf1))]
+    for i, (Ai, Bi) in enumerate(zip(tf1, tf2)):
         print("Obtaining motion {}...".format(i+1))
         curr_theta_max = 0
-        for j, (Aj, Bj) in enumerate(zip(camera_to_marker, base_to_hand)):
+        for j, (Aj, Bj) in enumerate(zip(tf1, tf2)):
             if i == j: continue
             A = DualQuaternion.from_transform(np.dot(Aj, np.linalg.inv(Ai)))
             B = DualQuaternion.from_transform(np.dot(np.linalg.inv(Bj), Bi))

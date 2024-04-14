@@ -52,7 +52,7 @@ def main():
     # Initialize calibrator with motions.
     cb = Calibrator4DOF(motions)
 
-    # Our camera and end effector z-axes are antiparallel so we must apply a 180deg x-axis rotation.
+    # Our camera and end effector z-axes are antiparallel, so we must apply a 180deg x-axis rotation.
     dq_x = cb.calibrate(antiparallel_screw_axes=args.antiparallel_axes)
 
     # Calibration Obtained Hand to Camera
@@ -61,7 +61,7 @@ def main():
     # Calibration Obtained with post nonlinear refinement
     if args.nonlinear:
         assert args.pose_path is not None, "Can't perform nonlinear refinement without poses. Please specify -p."
-        hand_to_camera = cb.nonlinear_refinement(base_to_hand, camera_to_marker, hand_to_camera)
+        hand_to_camera = cb.nonlinear_refinement(camera_to_marker, base_to_hand, hand_to_camera)
 
     rotation = np.rad2deg(R.from_matrix(hand_to_camera[:3, :3]).as_euler('xyz'))
 
